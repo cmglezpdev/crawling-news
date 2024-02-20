@@ -6,6 +6,9 @@ from heapq import nlargest
 
 def new_generatesumarize(text):
 
+        if not text:
+                return None
+
         nlp = spacy.load('en_core_web_sm') #loading the model
 
         doc = nlp(text) #preocessing the text
