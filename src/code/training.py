@@ -7,7 +7,7 @@ import json
 nlp = spacy.load("en_core_web_sm")
 
 # load documents
-df = pd.read_csv('cnn_news.csv')
+df = pd.read_csv('../data/cnn_news.csv')
 news = []
 for _, row in df.head(200).iterrows():
     news.append({
@@ -64,7 +64,7 @@ tfidf_model = gensim.models.TfidfModel(corpus)
 print("Guardando la representación vectorial del corpus...")
 vector_repr = [tfidf_model[doc] for doc in corpus]
 
-tfidf_model.save('tfidf_model')
-dictionary.save('dictionary')
-with open('docs_repr.json', 'w') as f:
+tfidf_model.save('../model/tfidf_model')
+dictionary.save('../model/dictionary')
+with open('../model/docs_vec_repr.json', 'w') as f:
     f.write(json.dumps(vector_repr))

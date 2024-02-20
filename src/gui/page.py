@@ -11,18 +11,18 @@ if "docs_showed" not in st.session_state:
     st.session_state['docs_showed'] = []
 
 if "tfidf_model" not in st.session_state:
-    st.session_state['tfidf_model'] = gensim.models.TfidfModel.load("model/tfidf_model")
+    st.session_state['tfidf_model'] = gensim.models.TfidfModel.load("../model/tfidf_model")
 
 if "dictionary" not in st.session_state:
-    st.session_state['dictionary'] = gensim.corpora.Dictionary.load("model/dictionary")
+    st.session_state['dictionary'] = gensim.corpora.Dictionary.load("../model/dictionary")
 
 if "docs_vec_repr" not in st.session_state:
-    with open("model/docs_vec_repr.json", "r") as f:
+    with open("../model/docs_vec_repr.json", "r") as f:
         st.session_state['docs_vec_repr'] = json.loads(f.read())
 
 if "documents" not in st.session_state:
     st.session_state['documents'] = []
-    df = pd.read_csv('data/cnn_news.csv')
+    df = pd.read_csv('../data/cnn_news.csv')
     
     for _, row in df.head(200).iterrows():
         st.session_state['documents'].append({
