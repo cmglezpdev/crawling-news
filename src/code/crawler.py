@@ -1,4 +1,5 @@
 from newspaper import Article
+import sumarizer
 
 class Crawler:
     """
@@ -11,6 +12,7 @@ class Crawler:
     _publish_date(str): New's publish date
     _content(str): New's content
     _description(str): New's description
+    _summary(str): Short summary of the new's content
     """
     
     def __init__(self, url: str) -> None:
@@ -26,68 +28,51 @@ class Crawler:
         self._content = None
         self._description = None
         self._html = None
+        self._summary = None
         
     def download(self):
         self._article.download()
         self._article.parse()
         self._html = self._article.html
+        self._title = self._article.title
+        self._top_image = self._article.top_image
+        self._authors = self._article.authors
+        self._publish_date = self._article.publish_date
+        self._content = self._article.text
+        self._description = self._article.meta_description
+        self._summary  = sumarizer.new_generatesumarize(self._content)
         
     @property
     def title(self):
-        if self._title: 
-            return self._title
-        if not self._html:
-            self.download()
-        self._title = self._article.title
         return self._title
         
     @property
     def top_image(self):
-        if self._top_image: 
-            return self._top_image
-        if not self._html:
-            self.download()
-        self._top_image = self._article.top_image
         return self._top_image
     
     @property
     def authors(self):
-        if self._authors: 
-            return self._authors
-        if not self._html:
-            self.download()    
-        self._authors = self._article.authors
         return self._authors
         
     @property
     def publish_date(self):
-        if self._publish_date: 
-            return self._publish_date
-        if not self._html:
-            self.download()
-        self._publish_date = self._article.publish_date
         return self._publish_date
         
     @property
     def content(self):
-        if self._content: 
-            return self._content
-        if not self._html:
-            self.download()
-        self._content = self._article.text
         return self._content
         
     @property
     def description(self):
-        if self._description: 
-            return self._description
-        if not self._html:
-            self.download()
-        self._description = self._article.meta_description
         return self._description
 
+    @property
+    def summary(self):
+        return self._summary
+    
     
 # crawl = Crawler('https://www.bbc.com/news/business-68254587')
+# crawl.download()
 
 # print(crawl.title)
 # print(crawl.authors)
@@ -95,3 +80,4 @@ class Crawler:
 # print(crawl.content)
 # print(crawl.top_image)
 # print(crawl.description)
+# print(crawl.summary)
