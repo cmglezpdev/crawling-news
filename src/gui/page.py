@@ -4,6 +4,7 @@ import gensim
 import spacy
 import json
 from crawler import Crawler
+from new import New
 
 if "query" not in st.session_state:
     st.session_state['query'] = ""
@@ -26,20 +27,22 @@ if "documents" not in st.session_state:
     df = pd.read_csv('../data/cnn_news.csv')
     
     for _, row in df.head(200).iterrows():
-        st.session_state['documents'].append({
-            'title': row['Headline'],
-            'author': row['Author'],
-            'url': row['Url'],
-            'content': row['Article text'],
-            'date': row['Date published'],
-            'description': row['Description']
-        })
+        st.session_state['documents'].append(New(
+            url=row['Url'],
+            title=row['Headline'],
+            authors=row['Author'],
+            content=row['Article text'],
+            publish_date=row['Date published'],
+            description=row['Description'],
+            top_image='',
+            summary=row['Description']
+        ))
 
 nlp = spacy.load('en_core_web_sm')
 tfidf_model: gensim.models.TfidfModel = st.session_state.tfidf_model
 dictionary: gensim.corpora.Dictionary = st.session_state.dictionary
 docs_vec_repr:list[list[tuple]] = st.session_state.docs_vec_repr
-documents:list[dict] = st.session_state.documents
+documents:list[New] = st.session_state.documents
 
 
 st.write(
@@ -49,16 +52,14 @@ st.write(
 )
 
 
-
-# @st.cache_datas
-def process_query(url: str):
+def process_query(url: str) -> tuple[New, list[tuple[New, float]]]:
     if not url:
         return
     
     crawl = Crawler(url)
-    crawl.download()
+    crawl.process_page()
     
-    query = crawl.content
+    query = crawl.data.content
     print("Tokenizando los documentos...")
     tokenized = [token for token in nlp(query)]
     tokenized = [token for token in tokenized if token.is_alpha and not token.is_stop]
@@ -71,25 +72,35 @@ def process_query(url: str):
         (index, gensim.matutils.cossim(query_vector, vector)) for index, vector in enumerate(docs_vec_repr)
     ]
     print('Tomando los 10 documentos mas similares...')
-    sorted_cosine_distance = sorted(cosine_distance, key=lambda x: x[1], reverse=True)    
+    sorted_cosine_distance = sorted(cosine_distance, key=lambda x: x[1], reverse=True)
+    filtered_docs = list(filter(lambda x: x[1] > 0, sorted_cosine_distance[:10]))
+    news = [(
+        New(
+            url=documents[doc[0]].url,
+            title=documents[doc[0]].title,
+            authors=documents[doc[0]].authors,
+            content=documents[doc[0]].content,
+            publish_date=documents[doc[0]].publish_date,
+            description=documents[doc[0]].description,
+            top_image='',
+            summary=documents[doc[0]].description
+        ), doc[1]) for doc in filtered_docs]
+
     return (
-        crawl, # new of the url 
-        list(filter(lambda x: x[1] > 0, sorted_cosine_distance[:10])) # similary news
+        crawl.data, # new of the url 
+        news # the most similary news
     )
-    
-    
-    
-    
-    
+
+
 
 
 st.text_input("Input a new's url", placeholder="https://webnews.com/....", key="query")
 
 if st.session_state.query:
     print("Procesando la consulta...")
-    article, docs = process_query(st.session_state.query)
+    article, news = process_query(st.session_state.query)
     
-    if len(docs) > 0:        
+    if len(news) > 0:        
         st.caption("#### The provided new")
         st.markdown(f"""
             ##### [{article.title}]({article.url})
@@ -100,13 +111,13 @@ if st.session_state.query:
             
         st.divider()
         st.caption("#### Suggestions")
-        for doc in docs:
-            st.caption(f"RELEVANCE: {round(doc[1], 4)}")
+        for new, relevance in news:
+            st.caption(f"RELEVANCE: {round(relevance, 4)}")
             st.markdown(f"""
-                ##### [{documents[doc[0]]['title']}]({documents[doc[0]]['url']})
-                **{documents[doc[0]]['author']}** | {documents[doc[0]]['date']}
+                ##### [{new.title}]({new.url})
+                **{', '.join(new.authors)}** | {new.publish_date}
                 
-                {documents[doc[0]]['description']}
+                {new.description}
             """)
             st.write("\n\n\n")
             st.divider()
