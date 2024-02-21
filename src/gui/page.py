@@ -115,7 +115,7 @@ if st.session_state.query:
             st.caption(f"RELEVANCE: {round(relevance, 4)}")
             st.markdown(f"""
                 ##### [{new.title}]({new.url})
-                **{', '.join(new.authors)}** | {new.publish_date}
+                **{new.authors}** | {new.publish_date}
                 
                 {new.description}
             """)
