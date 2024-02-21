@@ -92,11 +92,18 @@ def process_query(url: str) -> tuple[New, list[tuple[New, float]]]:
     )
 
 
+input_side, button_side = st.columns([0.8, 0.2])
+with input_side:
+    st.text_input("Input a new's url", placeholder="https://webnews.com/....", key="query")
+
+with button_side:
+    st.write('<style> .button-container { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 90%; } </style>', unsafe_allow_html=True)
+    st.write('<div class="button-container">', unsafe_allow_html=True)
+    st.button('Search', key="search_button")
+    st.write('</div>', unsafe_allow_html=True)
 
 
-st.text_input("Input a new's url", placeholder="https://webnews.com/....", key="query")
-
-if st.session_state.query:
+if st.session_state.search_button and st.session_state.query:
     print("Procesando la consulta...")
     article, news = process_query(st.session_state.query)
     
