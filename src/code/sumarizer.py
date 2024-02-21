@@ -4,12 +4,11 @@ from string import punctuation
 from collections import Counter
 from heapq import nlargest
 
+nlp = spacy.load('en_core_web_sm') #loading the model
 def new_generatesumarize(text):
 
         if not text:
                 return None
-
-        nlp = spacy.load('en_core_web_sm') #loading the model
 
         doc = nlp(text) #preocessing the text
 
