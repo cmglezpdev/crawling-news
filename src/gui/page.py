@@ -1,48 +1,6 @@
 import streamlit as st
-import pandas as pd
-import gensim
-import spacy
-import json
-from crawler import Crawler
 from new import New
-
-if "query" not in st.session_state:
-    st.session_state['query'] = ""
-
-if "docs_showed" not in st.session_state:
-    st.session_state['docs_showed'] = []
-
-if "tfidf_model" not in st.session_state:
-    st.session_state['tfidf_model'] = gensim.models.TfidfModel.load("../model/tfidf_model")
-
-if "dictionary" not in st.session_state:
-    st.session_state['dictionary'] = gensim.corpora.Dictionary.load("../model/dictionary")
-
-if "docs_vec_repr" not in st.session_state:
-    with open("../model/docs_vec_repr.json", "r") as f:
-        st.session_state['docs_vec_repr'] = json.loads(f.read())
-
-if "documents" not in st.session_state:
-    st.session_state['documents'] = []
-    df = pd.read_csv('../data/cnn_news.csv')
-    
-    for _, row in df.head(200).iterrows():
-        st.session_state['documents'].append(New(
-            url=row['Url'],
-            title=row['Headline'],
-            authors=row['Author'],
-            content=row['Article text'],
-            publish_date=row['Date published'],
-            description=row['Description'],
-            top_image='',
-            summary=row['Description']
-        ))
-
-nlp = spacy.load('en_core_web_sm')
-tfidf_model: gensim.models.TfidfModel = st.session_state.tfidf_model
-dictionary: gensim.corpora.Dictionary = st.session_state.dictionary
-docs_vec_repr:list[list[tuple]] = st.session_state.docs_vec_repr
-documents:list[New] = st.session_state.documents
+from search_engine import process_query
 
 
 st.write(
@@ -50,46 +8,6 @@ st.write(
 # Check news from different sources 
 """
 )
-
-
-def process_query(url: str) -> tuple[New, list[tuple[New, float]]]:
-    if not url:
-        return
-    
-    crawl = Crawler(url)
-    crawl.process_page()
-    
-    query = crawl.data.content
-    print("Tokenizando los documentos...")
-    tokenized = [token for token in nlp(query)]
-    tokenized = [token for token in tokenized if token.is_alpha and not token.is_stop]
-    print('Hallando la representacion del vector...')
-    query_bow = dictionary.doc2bow([token.lemma_ for token in tokenized])    
-    query_vector = tfidf_model[query_bow]
-    
-    print('Calculando la distancia coseno con el resto de los documentos...')
-    cosine_distance = [
-        (index, gensim.matutils.cossim(query_vector, vector)) for index, vector in enumerate(docs_vec_repr)
-    ]
-    print('Tomando los 10 documentos mas similares...')
-    sorted_cosine_distance = sorted(cosine_distance, key=lambda x: x[1], reverse=True)
-    filtered_docs = list(filter(lambda x: x[1] > 0, sorted_cosine_distance[:10]))
-    news = [(
-        New(
-            url=documents[doc[0]].url,
-            title=documents[doc[0]].title,
-            authors=documents[doc[0]].authors,
-            content=documents[doc[0]].content,
-            publish_date=documents[doc[0]].publish_date,
-            description=documents[doc[0]].description,
-            top_image='',
-            summary=documents[doc[0]].description
-        ), doc[1]) for doc in filtered_docs]
-
-    return (
-        crawl.data, # new of the url 
-        news # the most similary news
-    )
 
 
 input_side, button_side = st.columns([0.8, 0.2])
