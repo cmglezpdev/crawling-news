@@ -3,6 +3,7 @@ import pandas as pd
 import gensim
 import spacy
 import json
+from crawler import Crawler
 
 if "query" not in st.session_state:
     st.session_state['query'] = ""
@@ -49,12 +50,15 @@ st.write(
 
 
 
-@st.cache_data
-def process_query(query: str):
-    st.write("Haz escrito: ", query)
-    if not query:
+# @st.cache_datas
+def process_query(url: str):
+    if not url:
         return
-
+    
+    crawl = Crawler(url)
+    crawl.download()
+    
+    query = crawl.content
     print("Tokenizando los documentos...")
     tokenized = [token for token in nlp(query)]
     tokenized = [token for token in tokenized if token.is_alpha and not token.is_stop]
@@ -68,8 +72,10 @@ def process_query(query: str):
     ]
     print('Tomando los 10 documentos mas similares...')
     sorted_cosine_distance = sorted(cosine_distance, key=lambda x: x[1], reverse=True)    
-    print(sorted_cosine_distance)
-    return list(filter(lambda x: x[1] > 0, sorted_cosine_distance[:10]))
+    return (
+        crawl, # new of the url 
+        list(filter(lambda x: x[1] > 0, sorted_cosine_distance[:10])) # similary news
+    )
     
     
     
@@ -77,15 +83,25 @@ def process_query(query: str):
     
 
 
-st.text_input("Input a query", placeholder="Type here...", key="query")
+st.text_input("Input a new's url", placeholder="https://webnews.com/....", key="query")
 
 if st.session_state.query:
     print("Procesando la consulta...")
-    docs = process_query(st.session_state.query)
+    article, docs = process_query(st.session_state.query)
     
-    if len(docs) > 0:
+    if len(docs) > 0:        
+        st.caption("#### The provided new")
+        st.markdown(f"""
+            ##### [{article.title}]({article.url})
+            **{', '.join(article.authors)}** | {article.publish_date}
+        """)
+        st.write(article.summary)
+        st.write("\n\n\n")
+            
+        st.divider()
+        st.caption("#### Suggestions")
         for doc in docs:
-            st.caption(f"Document Relevance: {round(doc[1], 4)}")
+            st.caption(f"RELEVANCE: {round(doc[1], 4)}")
             st.markdown(f"""
                 ##### [{documents[doc[0]]['title']}]({documents[doc[0]]['url']})
                 **{documents[doc[0]]['author']}** | {documents[doc[0]]['date']}
