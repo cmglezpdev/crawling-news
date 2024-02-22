@@ -17,6 +17,11 @@ python install -m requirements.txt
 
 Navigate to `/src/code/` folder and execute `training.py` script training the _tfidf-model_ with the _cnn data_.
 
+Executing the project
+```bash
+python ./src
+```
+Or
 ```bash
 python training.py
 ```

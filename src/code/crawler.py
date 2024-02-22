@@ -1,6 +1,6 @@
 from newspaper import Article
-import sumarizer
-from new import New
+from .sumarizer import new_generatesumarize
+from .new import New
 
 class Crawler:
     """

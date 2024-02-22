@@ -1,5 +1,5 @@
 import streamlit as st
-from ..code.search_engine import process_query
+from code.search_engine import process_query
 
 
 st.write(
