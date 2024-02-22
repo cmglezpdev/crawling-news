@@ -17,7 +17,8 @@ class New:
     def __init__(self, url: str, title: str, 
                  top_image: str, authors: str, 
                  publish_date: str, content: str, 
-                 description: str, summary: str ) -> None:
+                 description: str, summary: str,
+                 named_entities: list[tuple[str, str]] = []) -> None:
         
         self._url = url
         self._title = title
@@ -27,6 +28,7 @@ class New:
         self._content = content
         self._description = description
         self._summary = summary
+        self._named_entities = named_entities
    
     @property
     def url(self):
@@ -63,3 +65,7 @@ class New:
     @property
     def summary(self):
         return self._summary
+    
+    @property
+    def named_entities(self):
+        return self._named_entities

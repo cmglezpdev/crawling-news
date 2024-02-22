@@ -9,16 +9,16 @@ from .new import New
 
 
 nlp = spacy.load('en_core_web_sm')
-tfidf_model: gensim.models.TfidfModel = gensim.models.TfidfModel.load("../model/tfidf_model")
+tfidf_model: gensim.models.TfidfModel = gensim.models.TfidfModel.load("./src/model/tfidf_model")
 
-dictionary: gensim.corpora.Dictionary = gensim.corpora.Dictionary.load("../model/dictionary")
+dictionary: gensim.corpora.Dictionary = gensim.corpora.Dictionary.load("./src/model/dictionary")
 
 docs_vec_repr:list[list[tuple]] = []
-with open("../model/docs_vec_repr.json", "r") as f:
+with open("./src/model/docs_vec_repr.json", "r") as f:
     docs_vec_repr:list[list[tuple]] = json.loads(f.read())
 
 documents:list[New] = []
-cnn_data_df = pd.read_csv('../data/cnn_news.csv')
+cnn_data_df = pd.read_csv('./src/data/cnn_news.csv')
 
 for _, row in cnn_data_df.head(200).iterrows():
     documents.append(New(

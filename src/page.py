@@ -24,13 +24,27 @@ if st.session_state.search_button and st.session_state.query:
     print("Procesando la consulta...")
     article, news = process_query(st.session_state.query)
     
+    named_entities = {}
+    
+    for text, entity in article.named_entities:
+        if entity in named_entities.keys():
+            named_entities[entity].append(text)
+        else:
+            named_entities[entity] = [text]
+
     if len(news) > 0:        
         st.caption("#### The provided new")
         st.markdown(f"""
             ##### [{article.title}]({article.url})
             **{', '.join(article.authors)}** | {article.publish_date}
         """)
+        st.markdown(f"""
+            **Named Entities:** 
+        """)
         st.write(article.summary)
+        for entity in named_entities.keys():
+            values = list(set(named_entities[entity])) 
+            st.caption(f"_{entity}_: {', '.join(values)}")
         st.write("\n\n\n")
             
         st.divider()

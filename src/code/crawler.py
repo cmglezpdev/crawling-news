@@ -1,6 +1,7 @@
 from newspaper import Article
 from .sumarizer import new_generatesumarize
 from .new import New
+from .named_entities_identifier import named_entities_searcher
 
 class Crawler:
     """
@@ -33,7 +34,8 @@ class Crawler:
             publish_date=self._article.publish_date,
             content=self._article.text,
             description=self._article.meta_description,
-            summary=sumarizer.new_generatesumarize(self._article.text)
+            summary=new_generatesumarize(self._article.text),
+            named_entities=named_entities_searcher(self._article.text)
         )
         
     @property
