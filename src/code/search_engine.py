@@ -1,9 +1,12 @@
-from crawler import Crawler
-from new import New
 import gensim
 import spacy
 import json
 import pandas as pd
+
+from .crawler import Crawler
+from .new import New
+ 
+
 
 nlp = spacy.load('en_core_web_sm')
 tfidf_model: gensim.models.TfidfModel = gensim.models.TfidfModel.load("../model/tfidf_model")
